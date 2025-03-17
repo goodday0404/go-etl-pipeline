@@ -30,7 +30,6 @@ func InitLogger() {
 	}
 
 	zerolog.SetGlobalLevel(level)
-	log.Logger = log.Logger.With().Caller().Logger() // add file name and line number
 
 	log.Info().Str("env", env).Str("level", level.String()).Msg("Logger initialized")
 }

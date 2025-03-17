@@ -4,22 +4,25 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Server   `mapstructure:"server"`
-	Database `mapstructure:"database"`
-	API      `mapstructure:"financial_api"`
+	ServerConfig   `mapstructure:"server"`
+	DatabaseConfig `mapstructure:"database"`
+	APIConfig      `mapstructure:"financial_api"`
 }
 
-type Server struct {
-	ServerPort int `mapstructure:"port"`
+type ServerConfig struct {
+	ServerHost      string        `mapstructure:"host"`
+	ServerPort      int           `mapstructure:"port"`
+	ShutdownTimeout time.Duration `mapstructure:"shutdown_timeout"`
 }
 
-type Database struct {
+type DatabaseConfig struct {
 	DBHost     string `mapstructure:"host"`
 	DBPort     int    `mapstructure:"port"`
 	DBUser     string `mapstructure:"user"`
@@ -27,7 +30,7 @@ type Database struct {
 	DBName     string `mapstructure:"name"`
 }
 
-type API struct {
+type APIConfig struct {
 	AlphaVantage `mapstructure:"alphavantage"`
 }
 
@@ -40,12 +43,12 @@ func LoadConfig() (*Config, error) {
 	configPath, err := env("CONFIG_PATH")
 
 	if err != nil {
-		log.Error().Err(err).Msg("Not able to find a path to the configuration file")
+		log.Error().Caller().Err(err).Msg("Not able to find a path to the configuration file")
 		return nil, err
 	}
 
 	if len(configPath) == 0 {
-		log.Error().Msg("The path to the configuration file is empty")
+		log.Error().Caller().Msg("The path to the configuration file is empty")
 		return nil, err
 	}
 
@@ -55,14 +58,14 @@ func LoadConfig() (*Config, error) {
 
 	if err := viper.ReadInConfig(); err != nil {
 		err := fmt.Errorf("[LoadConfig] error reading config: %w", err)
-		log.Error().Err(err).Msg("viper failed to read config data")
+		log.Error().Caller().Err(err).Msg("viper failed to read config data")
 		return nil, err
 	}
 
 	var cfg Config
 
 	if err := viper.Unmarshal(&cfg); err != nil {
-		log.Error().Err(err).Msg("Failed to unmarshaling config data")
+		log.Error().Caller().Err(err).Msg("Failed to unmarshaling config data")
 		return nil, err
 	}
 
